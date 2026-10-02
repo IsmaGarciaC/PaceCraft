@@ -8,6 +8,18 @@
     <a href="/add-run" class="btn btn-primary btn-lg shadow-sm">+ Log a Run</a>
 </div>
 
+{% if user.runs %}
+<!-- Chart Section -->
+<div class="card shadow-sm mb-4 border-0">
+    <div class="card-body">
+        <h5 class="card-title mb-3">Pace Progression</h5>
+        <div style="position: relative; height: 35vh; width: 100%;">
+            <canvas id="paceChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="card shadow-sm mb-5 border-0">
     <div class="card-body">
         <h5 class="card-title mb-4">Your Recent Training History</h5>
@@ -46,4 +58,11 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Import Chart.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Link our custom charts logic -->
+<script src="{{ url_for('static', path='/js/charts.js') }}"></script>
 {% endblock %}

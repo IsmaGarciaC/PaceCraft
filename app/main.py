@@ -161,3 +161,27 @@ async def predictions_page(request: Request, user: models.User = Depends(auth.ge
         }
     )
 
+# ---------------------------------------------------------
+# API Routes (JSON endpoints for dynamic JS features)
+# ---------------------------------------------------------
+
+@app.get("/api/chart-data")
+async def get_chart_data(user: models.User = Depends(auth.get_current_user_from_cookie)):
+    """JSON API Endpoint for Chart.js to render progression."""
+    from fastapi import HTTPException
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    
+    # Sort runs chronologically (oldest to newest) so the chart flows correctly
+    runs = sorted(user.runs, key=lambda r: r.date)
+    
+    # Extract data for X and Y axes
+    labels = [run.date.strftime("%b %d") for run in runs]
+    paces = [round(run.pace, 2) for run in runs]
+    
+    return {
+        "labels": labels,
+        "paces": paces
+    }
+
+
