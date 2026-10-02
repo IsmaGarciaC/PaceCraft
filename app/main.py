@@ -2,8 +2,15 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from .database import engine
+from . import models
+
 # Initialize the FastAPI application
 app = FastAPI(title="PaceCraft")
+
+# Create all database tables based on the models defined
+models.Base.metadata.create_all(bind=engine)
+
 
 # Mount the 'static' directory to serve CSS, JS, and images
 # This allows the HTML files to access stylesheets like: /static/css/style.css
