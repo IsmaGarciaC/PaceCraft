@@ -1,16 +1,49 @@
 {% extends "base.html" %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}Dashboard - PaceCraft{% endblock %}
 
 {% block content %}
-<!-- Main Jumbotron / Hero Section -->
-<div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
-    <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold text-primary">Welcome back, {{ user.username }}!</h1>
-        <p class="col-md-8 fs-4 mt-3">
-            You are successfully authenticated. Your dashboard is ready for Phase 4 where we will start logging your running sessions.
-        </p>
-        <button class="btn btn-primary btn-lg mt-3" type="button">Log a Run</button>
+<div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+    <h1 class="display-6 fw-bold text-primary">Dashboard</h1>
+    <a href="/add-run" class="btn btn-primary btn-lg shadow-sm">+ Log a Run</a>
+</div>
+
+<div class="card shadow-sm mb-5 border-0">
+    <div class="card-body">
+        <h5 class="card-title mb-4">Your Recent Training History</h5>
+        
+        {% if user.runs %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th class="text-start">Title</th>
+                        <th>Distance</th>
+                        <th>Time</th>
+                        <th>Avg Pace</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Sort runs by date, newest first -->
+                    {% for run in user.runs|sort(attribute='date', reverse=True) %}
+                    <tr>
+                        <td class="text-muted">{{ run.date.strftime('%b %d, %Y') }}</td>
+                        <td class="text-start"><strong>{{ run.title }}</strong></td>
+                        <td>{{ run.distance_km }} km</td>
+                        <td>{{ run.time_minutes }} min</td>
+                        <td><span class="badge bg-info text-dark fs-6">{{ run.pace | format_pace }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-light text-center py-5 border" role="alert">
+            <h4 class="alert-heading text-muted">No runs logged yet!</h4>
+            <p class="mb-0 mt-2 text-muted">Get out there and start tracking your progress.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
