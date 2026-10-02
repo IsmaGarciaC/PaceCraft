@@ -1,0 +1,17 @@
+/* Custom styles for PaceCraft */
+
+/* Set a subtle background color for the whole app */
+body {
+    background-color: #f4f6f9;
+}
+
+/* Example custom override for primary buttons */
+.btn-primary {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+    border-color: #1d4ed8;
+}
