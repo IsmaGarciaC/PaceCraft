@@ -24,10 +24,16 @@
                 <ul class="navbar-nav ms-auto">
                     {% if user %}
                     <li class="nav-item">
-                        <span class="nav-link text-light">Hi, {{ user.username }}</span>
+                        <a class="nav-link" href="/">Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/logout">Logout</a>
+                        <a class="nav-link" href="/predictions">Projections</a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link text-light border-start ms-3 ps-3">Hi, {{ user.username }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-warning" href="/logout">Logout</a>
                     </li>
                     {% else %}
                     <li class="nav-item">

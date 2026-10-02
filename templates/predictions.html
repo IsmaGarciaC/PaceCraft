@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Race Projections - PaceCraft{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="display-6 fw-bold text-primary">Race Projections</h1>
+        </div>
+
+        <div class="card shadow-sm border-0 p-4 mb-4">
+            <p class="fs-5 text-muted">
+                Using <strong>Peter Riegel's fatigue formula</strong> <code>T2 = T1 × (D2 / D1)¹·⁰⁶</code>, 
+                we can mathematically project your race times based on your most recent training session.
+            </p>
+
+            {% if baseline_run %}
+            <div class="alert alert-info mt-2 shadow-sm">
+                <strong>Your Baseline Run:</strong> "{{ baseline_run.title }}" 
+                <br>
+                <small>Distance: {{ baseline_run.distance_km }} km | Time: {{ baseline_run.time_minutes }} mins | Pace: {{ baseline_run.pace | format_pace }}</small>
+            </div>
+
+            <div class="row mt-4">
+                <!-- 5K Projection -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm text-center border-primary mb-3">
+                        <div class="card-header bg-primary text-white fw-bold fs-5">5K Race</div>
+                        <div class="card-body py-4">
+                            <h2 class="card-title text-primary fw-bold">{{ projections['5K'] | format_time }}</h2>
+                            <p class="text-muted mb-0"><small>HH:MM:SS</small></p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 10K Projection -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm text-center border-success mb-3">
+                        <div class="card-header bg-success text-white fw-bold fs-5">10K Race</div>
+                        <div class="card-body py-4">
+                            <h2 class="card-title text-success fw-bold">{{ projections['10K'] | format_time }}</h2>
+                            <p class="text-muted mb-0"><small>HH:MM:SS</small></p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Half Marathon Projection -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm text-center border-danger mb-3">
+                        <div class="card-header bg-danger text-white fw-bold fs-5">Half Marathon</div>
+                        <div class="card-body py-4">
+                            <h2 class="card-title text-danger fw-bold">{{ projections['Half Marathon'] | format_time }}</h2>
+                            <p class="text-muted mb-0"><small>21.09 km</small></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% else %}
+            <div class="alert alert-warning mt-4 text-center py-4">
+                <h4>No data available!</h4>
+                <p>You need to log at least one run to see your mathematical race projections.</p>
+                <a href="/add-run" class="btn btn-primary mt-2">Log a Run Now</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from .database import engine, get_db
 from . import models, auth
-from .calculations import calculate_pace, format_pace
+from .calculations import calculate_pace, format_pace, predict_time, format_time
 
 # Initialize the FastAPI application
 app = FastAPI(title="PaceCraft")
@@ -20,8 +20,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Set up Jinja2 templates
 templates = Jinja2Templates(directory="templates")
 
-# Register custom Jinja filter for nice pace formatting (e.g., 5.5 -> 5:30 /km)
+# Register custom Jinja filters
 templates.env.filters["format_pace"] = format_pace
+templates.env.filters["format_time"] = format_time
 
 # ---------------------------------------------------------
 # UI Routes
@@ -131,3 +132,32 @@ async def logout():
     redirect = RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     redirect.delete_cookie(key="access_token")
     return redirect
+
+@app.get("/predictions")
+async def predictions_page(request: Request, user: models.User = Depends(auth.get_current_user_from_cookie)):
+    """Displays race projections based on the user's most recent run."""
+    if not user:
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    
+    # Get the most recent run to use as baseline
+    latest_run = max(user.runs, key=lambda r: r.date, default=None) if user.runs else None
+    
+    projections = None
+    if latest_run:
+        projections = {
+            "5K": predict_time(latest_run.time_minutes, latest_run.distance_km, 5.0),
+            "10K": predict_time(latest_run.time_minutes, latest_run.distance_km, 10.0),
+            "Half Marathon": predict_time(latest_run.time_minutes, latest_run.distance_km, 21.0975)
+        }
+        
+    return templates.TemplateResponse(
+        "predictions.html", 
+        {
+            "request": request, 
+            "title": "Race Projections", 
+            "user": user, 
+            "baseline_run": latest_run,
+            "projections": projections
+        }
+    )
+
