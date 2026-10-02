@@ -1,4 +1,4 @@
-# PaceCraft 🏃‍♂️💨
+# PaceCraft
 #### Video Demo:  <YOUR_YOUTUBE_URL_HERE>
 #### Description:
 
