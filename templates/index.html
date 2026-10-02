@@ -6,12 +6,11 @@
 <!-- Main Jumbotron / Hero Section -->
 <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
     <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold text-primary">Hello World! Welcome to PaceCraft</h1>
+        <h1 class="display-5 fw-bold text-primary">Welcome back, {{ user.username }}!</h1>
         <p class="col-md-8 fs-4 mt-3">
-            This is the Phase 1 setup. 
-            FastAPI and Jinja2 are successfully communicating. The environment is ready for development!
+            You are successfully authenticated. Your dashboard is ready for Phase 4 where we will start logging your running sessions.
         </p>
-        <button class="btn btn-primary btn-lg mt-3" type="button">Let's Run</button>
+        <button class="btn btn-primary btn-lg mt-3" type="button">Log a Run</button>
     </div>
 </div>
 {% endblock %}
