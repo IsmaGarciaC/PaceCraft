@@ -1,5 +1,5 @@
 # PaceCraft 🏃‍♂️💨
-#### Video Demo:  <YOUR_YOUTUBE_URL_HERE>
+#### Video Demo:  https://youtu.be/znXvk1IC7E0
 #### Description:
 
 **PaceCraft** is a lightweight, full-stack web application tailored for runners. It allows athletes to log their training sessions, calculate accurate paces, visualize their progression over time, and mathematically project future race performances (5K, 10K, and Half-Marathons).
