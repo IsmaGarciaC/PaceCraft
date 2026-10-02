@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from .database import engine, get_db
 from . import models, auth
+from .calculations import calculate_pace, format_pace
 
 # Initialize the FastAPI application
 app = FastAPI(title="PaceCraft")
@@ -19,6 +20,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Set up Jinja2 templates
 templates = Jinja2Templates(directory="templates")
 
+# Register custom Jinja filter for nice pace formatting (e.g., 5.5 -> 5:30 /km)
+templates.env.filters["format_pace"] = format_pace
+
 # ---------------------------------------------------------
 # UI Routes
 # ---------------------------------------------------------
@@ -26,7 +30,7 @@ templates = Jinja2Templates(directory="templates")
 @app.get("/")
 async def root(request: Request, user: models.User = Depends(auth.get_current_user_from_cookie)):
     """
-    Root endpoint. If user is not authenticated, redirect to login.
+    Root endpoint. Shows user dashboard if authenticated.
     """
     if not user:
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
@@ -35,6 +39,43 @@ async def root(request: Request, user: models.User = Depends(auth.get_current_us
         "index.html", 
         {"request": request, "title": "Dashboard", "user": user}
     )
+
+@app.get("/add-run")
+async def add_run_page(request: Request, user: models.User = Depends(auth.get_current_user_from_cookie)):
+    """Displays the HTML form to log a new run."""
+    if not user:
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    return templates.TemplateResponse("add_run.html", {"request": request, "title": "Log a Run", "user": user})
+
+@app.post("/add-run")
+async def add_run(
+    request: Request,
+    title: str = Form(...),
+    distance_km: float = Form(...),
+    time_minutes: float = Form(...),
+    user: models.User = Depends(auth.get_current_user_from_cookie),
+    db: Session = Depends(get_db)
+):
+    """Processes the form submission, calculates pace, and saves the run to the database."""
+    if not user:
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    
+    # Use business logic module to calculate pace
+    pace = calculate_pace(distance_km=distance_km, time_minutes=time_minutes)
+    
+    # Create and save the run linked to the current user
+    new_run = models.Run(
+        title=title,
+        distance_km=distance_km,
+        time_minutes=time_minutes,
+        pace=pace,
+        user_id=user.id
+    )
+    db.add(new_run)
+    db.commit()
+    
+    # Redirect back to dashboard to see the new run
+    return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
 
 @app.get("/register")
 async def register_page(request: Request):
@@ -47,20 +88,16 @@ async def register(
     password: str = Form(...), 
     db: Session = Depends(get_db)
 ):
-    # Check if username exists
     existing_user = db.query(models.User).filter(models.User.username == username).first()
     if existing_user:
         return templates.TemplateResponse("register.html", {"request": request, "error": "Username already taken."})
     
-    # Hash password and save new user
     hashed_pw = auth.get_password_hash(password)
     new_user = models.User(username=username, hashed_password=hashed_pw)
     db.add(new_user)
     db.commit()
     
-    # Redirect to login
     return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-
 
 @app.get("/login")
 async def login_page(request: Request):
@@ -73,30 +110,24 @@ async def login(
     password: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    # Verify user exists and password is correct
     user = db.query(models.User).filter(models.User.username == username).first()
     if not user or not auth.verify_password(password, user.hashed_password):
         return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username or password."})
     
-    # Generate JWT token
     access_token = auth.create_access_token(data={"sub": user.username})
     
-    # Create redirect response and set the HttpOnly cookie
     redirect = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
     redirect.set_cookie(
         key="access_token", 
         value=f"Bearer {access_token}", 
         httponly=True, 
-        secure=False, # Set to True if using HTTPS
+        secure=False, 
         max_age=auth.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
     return redirect
 
 @app.get("/logout")
 async def logout():
-    """
-    Clears the JWT cookie and redirects to login.
-    """
     redirect = RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     redirect.delete_cookie(key="access_token")
     return redirect
